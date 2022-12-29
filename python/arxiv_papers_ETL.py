@@ -54,8 +54,8 @@ pgurl = decodes.decode('utf-8')
 conn_string = pgurl
 
 
-data_dir = "c:\papers"
-#data_dir = "/mnt/c/papers/arxiv_batch_461.json"
+#data_dir = "c:\papers"
+data_dir = "/mnt/c/papers/arxiv_batch_461.json"
 #dbconn = pg.connect(PG_CONN_STRING)
 
 dbconn = pg.connect(pgurl)
