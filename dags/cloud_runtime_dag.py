@@ -12,6 +12,9 @@ from airflow.utils.dates import days_ago
 from kubernetes import client, config
 import base64
 
+from airflow.kubernetes.secret import Secret 
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
+
 config.load_kube_config()
 
 v1     = client.CoreV1Api()
@@ -33,7 +36,6 @@ with DAG(dag_id='cloud_runtime_etl',
 
     execute_sql_function_insert_to_table = PostgresOperator(
         task_id='execute_procedure_insert_cloud_runtime_job_test',
-        #postgres_conn_id = 'localPSQL',
         AIRFLOW_CONN_POSTGRES_MASTER = pgurl,
         sql='''
         call insert_cloud_runtime_job_test();
@@ -41,3 +43,5 @@ with DAG(dag_id='cloud_runtime_etl',
     )
 
     execute_sql_function_insert_to_table
+
+    #postgres_conn_id = 'localPSQL',
