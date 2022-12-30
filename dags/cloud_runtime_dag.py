@@ -1,5 +1,5 @@
 from sys import exec_prefix
-from airflow import DAG
+from airflow import DAGhelmhelm
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.http.sensors.http import HttpSensor
 from airflow.providers.http.operators.http import SimpleHttpOperator
@@ -16,9 +16,11 @@ from airflow.kubernetes.secret import Secret
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.configuration import conf
 
-config.load_kube_config(context='rancher-desktop')
+#config.load_kube_config(context='rancher-desktop')
 
 #load_incluster_config()
+
+config.load_incluster_config()
 
 v1     = client.CoreV1Api()
 secret = v1.read_namespaced_secret("airflow-postgresdb", "airflow")
