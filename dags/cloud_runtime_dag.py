@@ -14,7 +14,7 @@ from kubernetes import client, config
 import base64
 import os
 from airflow.kubernetes.secret import Secret 
-from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
+#from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.configuration import conf
 
 config.load_incluster_config()
@@ -35,7 +35,8 @@ with DAG(dag_id='cloud_runtime_etl',
 
     execute_sql_function_insert_to_table = PostgresOperator(
         task_id='execute_procedure_insert_cloud_runtime_job_test',
-        AIRFLOW_CONN_POSTGRES_MASTER = pgurl,
+        #AIRFLOW_CONN_POSTGRES_MASTER = pgurl,
+        postgres_conn_id='cloud_runtime_psql',
         sql='''
         call insert_cloud_runtime_job_test();
         '''
@@ -44,3 +45,4 @@ with DAG(dag_id='cloud_runtime_etl',
     execute_sql_function_insert_to_table
 
     #postgres_conn_id = 'localPSQL',
+    #postgresql://postgres:L45hTHHxM7hhR46PJlIo@localhost:5432/postgres
