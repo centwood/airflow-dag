@@ -25,7 +25,7 @@ data   = secret.data
 
 decodes = base64.b64decode(secret.data["pgurl"])
 pgurl = decodes.decode('utf-8')
-namespace = conf.get("kubernetes","airflow")
+#namespace = conf.get("kubernetes","airflow")
 
 with DAG(dag_id='cloud_runtime_etl',
          default_args={'owner': 'airflow'},
