@@ -17,7 +17,7 @@ def display_variable():
     return my_var
 
 with DAG(
-    dag_id='variable_dag',
+    dag_id='display_variable',
     default_args=default_args,
     schedule_interval='@daily',
     start_date=days_ago(1)
