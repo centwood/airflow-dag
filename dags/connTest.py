@@ -19,7 +19,8 @@ def display_variable():
 with DAG(
     dag_id='variable_dag',
     default_args=default_args,
-    schedule_interval='@once'
+    schedule_interval='@daily',
+    start_date=days_ago(1)
 ) as dag:
 
     task = PythonOperator(
