@@ -11,6 +11,7 @@ from github import Github
 import pandas as pd 
 from datetime import date
 from airflow.models import Variable 
+from airflow.providers import GitHub
 
 
 def execute_process():
@@ -82,7 +83,6 @@ with DAG(dag_id='github_import',
 
     insert_github_into_table = PythonOperator(
         task_id='insert_github_into_table',
-        provide_context = True,
         python_callable=execute_process,
         
     )
