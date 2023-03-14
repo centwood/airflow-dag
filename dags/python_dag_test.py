@@ -17,10 +17,11 @@ from airflow.providers import GitHub
 def execute_process():
 
     #"""Local Connection String """
-    conn = PostgresHook(conn_id='postgres_local')
-    uri = conn.get_uri
+    #conn = PostgresHook(conn_id='postgres_local')
+    #uri = conn.get_uri
 
-    conn_string_source = uri
+    #conn_string_source = uri
+    conn_string_source = 'postgresql://postgres:L45hTHHxM7hhR46PJlIo@localhost:5432/postgres'
 
     alchemyEngineSource = create_engine(conn_string_source)
 
@@ -28,7 +29,7 @@ def execute_process():
     dbConnectionSource    = alchemyEngineSource.connect()
 
     #"""Access Token for GitHub"""
-    ACCESS_TOKEN = Variable.get("gitHubToken")
+    ACCESS_TOKEN = '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'#Variable.get("gitHubToken")
 
     g = Github(ACCESS_TOKEN)
 
