@@ -10,12 +10,6 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow import DAG
 from datetime import datetime
 
-postgres_conn_id = PostgresHook(postgres_conn_id='postgres_local')
-postgres_uri = postgres_conn_id.get_uri()
-gitHubTokenID = Variable.get("gitHubToken")
-
-
-
 def my_func(p1, p2):
     #"""Local Connection String """
     conn_string_source = p1  
@@ -73,6 +67,9 @@ def my_func(p1, p2):
         subscriberDF = pd.DataFrame([[subscribercount,repo.full_name,date.today()]],columns=['subscribercount','repoName','loadDate'])
         subscriberDF.to_sql('git_hub_subscribers', con = dbConnectionSource, method = 'multi', schema='public',  if_exists='append',chunksize=1000, index=False)
 
+    postgres_conn_id = PostgresHook(postgres_conn_id='postgres_local')
+    postgres_uri = postgres_conn_id.get_uri()
+    gitHubTokenID = Variable.get("gitHubToken")
 
 
     with DAG('python_dag_github', description='Python DAG', schedule_interval='*/5 * * * *', start_date=datetime(2018, 11, 1), catchup=False) as dag:
