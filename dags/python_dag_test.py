@@ -11,7 +11,7 @@ from github import Github
 import pandas as pd 
 from datetime import date
 from airflow.models import Variable 
-from airflow.providers import GitHub
+#from airflow.providers import GitHub
 
 
 def execute_process():
