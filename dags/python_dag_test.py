@@ -1,17 +1,88 @@
+
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
-import airflow.hooks.base as BaskHook
-
-from time import sleep
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime
+from airflow.utils.dates import days_ago
+import sqlalchemy as db
+from sqlalchemy import create_engine
+from github import Github 
+import pandas as pd 
+from datetime import date
+from airflow.models import Variable 
 
-def my_func(*op_args):
-        print(op_args)
-        return op_args[0]
 
-with DAG('python_dag', description='Python DAG', schedule_interval='*/5 * * * *', start_date=datetime(2018, 11, 1), catchup=False) as dag:
-        dummy_task      = DummyOperator(task_id='dummy_task', retries=3)
-        python_task     = PythonOperator(task_id='python_task', python_callable=my_func, op_args=['one', 'two', 'three'])
+def execute_process():
 
-        dummy_task >> python_task
+    #"""Local Connection String """
+    conn = PostgresHook(conn_id='postgres_local')
+    uri = conn.get_uri
+
+    conn_string_source = uri
+
+    alchemyEngineSource = create_engine(conn_string_source)
+
+
+    dbConnectionSource    = alchemyEngineSource.connect()
+
+    #"""Access Token for GitHub"""
+    ACCESS_TOKEN = Variable.get("gitHubToken")
+
+    g = Github(ACCESS_TOKEN)
+
+
+    #"""Querying the Postges Database to produce the list of Repos to monitor"""
+    metadata = db.MetaData()
+
+    githubMonOrg = db.Table('git_hub_monitoring_repository', metadata, autoload=True, autoload_with=alchemyEngineSource)
+
+    query = db.select([githubMonOrg.columns.name])
+
+    results = alchemyEngineSource.execute(query)
+
+
+    #"""Loop Trough the Repos to get the count of stars, subscribers, forks"""
+    for record in results:
+        
+         
+        repo = g.get_repo(record.name)
+        
+        starcount = repo.get_stargazers().totalCount
+
+
+        stargazerfilledcount = repo.get_watchers().totalCount
+
+
+        forkcount = repo.get_forks().totalCount
+
+
+        subscribercount = repo.get_subscribers().totalCount
+    #Insert Github data into the postgres data
+
+        df = pd.DataFrame()
+
+        stargazerDF = pd.DataFrame([[starcount,repo.full_name,date.today()]],columns=['stargazercount','repoName','loadDate'])
+        stargazerDF.to_sql('git_hub_stargazer', con = dbConnectionSource, method = 'multi', schema='public',  if_exists='append',chunksize=1000, index=False)
+            
+        watcherDF = pd.DataFrame([[stargazerfilledcount,repo.full_name,date.today()]],columns=['watchercount','repoName','loadDate'])
+        watcherDF.to_sql('git_hub_watcher', con = dbConnectionSource, method = 'multi', schema='public',  if_exists='append',chunksize=1000, index=False)
+
+        forkDF = pd.DataFrame([[forkcount,repo.full_name,date.today()]],columns=['forkcount','repoName','loadDate'])
+        forkDF.to_sql('git_hub_fork', con = dbConnectionSource, method = 'multi', schema='public',  if_exists='append',chunksize=1000, index=False)
+
+        subscriberDF = pd.DataFrame([[subscribercount,repo.full_name,date.today()]],columns=['subscribercount','repoName','loadDate'])
+        subscriberDF.to_sql('git_hub_subscribers', con = dbConnectionSource, method = 'multi', schema='public',  if_exists='append',chunksize=1000, index=False)
+
+with DAG(dag_id='github_import',
+         default_args={'owner': 'airflow'},
+         schedule_interval='@daily',
+         start_date=days_ago(1)
+    ) as dag:
+
+    insert_github_into_table = PythonOperator(
+        task_id='insert_github_into_table',
+        provide_context = True,
+        python_callable=execute_process,
+        
+    )
